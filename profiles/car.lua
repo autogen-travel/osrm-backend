@@ -205,15 +205,29 @@ local function getTurnLanes(way)
     local turn_lanes_fw = way:get_value_by_key("turn:lanes:forward")
     local turn_lanes_bw = way:get_value_by_key("turn:lanes:backward")
 
-    if( fw_psv ~= 0 or bw_psv ~= 0 ) then
-        if  turn_lanes and turn_lanes ~= "" then
-            turn_lanes = trimLaneString(turn_lanes, bw_psv, fw_psv )
+    local vehicle_lanes = way:get_value_by_key("vehicle:lanes");
+    local vehicle_lanes_fw = way:get_value_by_key("vehicle:lanes:forward");
+    local vehicle_lanes_bw = way:get_value_by_key("vehicle:lanes:backward");
+
+    if turn_lanes and turn_lanes ~= "" then
+        if vehicle_lanes and vehicle_lanes ~= "" then
+            turn_lanes = applyAccessTokens(turn_lanes,vehicle_lanes)
+        elseif  fw_psv ~= 0 or bw_psv ~= 0  then
+            turn_lanes = LaneString(turn_lanes, bw_psv, fw_psv )
         end
-        if  turn_lanes_fw and turn_lanes_fw ~= ""  then
+    end
+    if turn_lanes_fw and turn_lanes_fw ~= ""  then
+        if vehicle_lanes_fw and vehicle_lanes_fw ~= "" then
+            turn_lanes_fw = applyAccessTokens(turn_lanes_fw,vehicle_lanes_fw)
+        elseif  fw_psv ~= 0 or bw_psv ~= 0  then
             turn_lanes_fw = trimLaneString(turn_lanes_fw, bw_psv, fw_psv )
         end
-        --backwards turn lanes need to treat bw_psv as fw_psv and vice versa
-        if  turn_lanes_bw and turn_lanes_bw ~= ""  then
+    end
+    --backwards turn lanes need to treat bw_psv as fw_psv and vice versa
+    if turn_lanes_bw and turn_lanes_bw ~= ""  then
+        if vehicle_lanes_bw and vehicle_lanes_bw ~= "" then
+            turn_lanes_bw = applyAccessTokens(turn_lanes_bw,vehicle_lanes_bw)
+        elseif  fw_psv ~= 0 or bw_psv ~= 0  then
             turn_lanes_bw = trimLaneString(turn_lanes_bw, fw_psv, bw_psv )
         end
     end
